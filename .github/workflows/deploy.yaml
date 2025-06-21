@@ -1,20 +1,21 @@
-name: Deploy React App
+name: Deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
+
+concurrency:
+  group: "ci-workflow"
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: self-hosted
+    environment: stage
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
 
       - name: Copy ENV variables
         run: |
@@ -22,16 +23,33 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t talk-frontend:latest .
+          docker build -t github_runner/talk-frontend:stage .
+          docker tag github_runner/talk-frontend:stage ${{ secrets.DOCKER_REGISTRY_HOST }}/talk-frontend:stage
 
-      - name: Stop and remove old container
+      - name: Log in to Docker Hub
         run: |
-          docker stop talk-frontend || true
-          docker rm talk-frontend || true
+          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login --password-stdin -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" "${{ secrets.DOCKER_REGISTRY_HOST }}"
 
-      - name: Run new container
+  push-image:
+    runs-on: self-hosted
+    needs: build
+    environment: stage
+
+    steps:
+      - name: Push Stage Docker image
         run: |
-          docker run -d \
-            --name talk-frontend \
-            -p 3000:80 \
-            talk-frontend:latest
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/talk-frontend:stage
+
+  deploy-stage:
+    runs-on: self-hosted
+    needs: push-image
+    environment: stage
+
+    steps:
+      - name: Start Integration stand
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          echo "$DEPLOY_SSH_KEY" > deploy_key.pem
+          chmod 600 deploy_key.pem
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no root@ifedoseev.ru "cd /root/chat_app/stage && docker compose down && docker compose up -d --build --force-recreate"
