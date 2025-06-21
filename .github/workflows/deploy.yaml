@@ -40,13 +40,19 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/talk-frontend:stage
 
-  deploy-stage:
+      - name: Delete Docker image
+        run: |
+          docker rmi -f \
+            github_runner/talk-frontend:stage \
+            ${{ secrets.DOCKER_REGISTRY_HOST }}/talk-frontend:stage
+
+  restart-stage:
     runs-on: self-hosted
     needs: push-image
     environment: stage
 
     steps:
-      - name: Start Integration stand
+      - name: Restart stage
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         run: |

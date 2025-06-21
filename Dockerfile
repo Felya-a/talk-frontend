@@ -1,23 +1,19 @@
-# Step 1: Build React app
-FROM node:22 AS build
+# Билд React-приложения
+FROM node:22 AS client-builder
+WORKDIR /build
 
-WORKDIR /app
+COPY ./package.json ./
+RUN npm i --force --loglevel=error
 
-COPY package*.json ./
-RUN npm install
-
-COPY . ./
+COPY . .
 RUN npm run build
 
-# Step 2: Serve app using Nginx
-FROM nginx:alpine
+# ----------------------------------------------------------------------------------------
 
-# Copy build output to Nginx html directory
-COPY --from=build /app/build /usr/share/nginx/html
+# Образ nginx и статическими файлами React
+FROM nginx:latest
 
-# Copy custom nginx config (optional)
-# COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 3000
 
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+COPY --from=client-builder /build/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=client-builder /build/build/ /usr/share/nginx/html/
