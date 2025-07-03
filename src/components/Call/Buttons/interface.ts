@@ -1,4 +1,4 @@
 export interface ActionButtonProps {
-    isActive: boolean
-    switchMode: () => void
+	isActive: boolean | (() => boolean)
+	switchMode: () => void
 }

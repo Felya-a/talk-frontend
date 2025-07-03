@@ -1,14 +1,11 @@
 import { observer } from "mobx-react-lite"
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { LOCAL_VIDEO } from "../../hooks/useWebRTC"
 import { sessionStore } from "../../store"
-import Chat from "./Chat"
-import { ActionButtons, Call, CallSpace, Video, Videos } from "./styles"
-import MicButton from "./Buttons/MicButton"
-import CamButton from "./Buttons/CamButton"
-import ScreenShareButton from "./Buttons/ScreenShareButton"
-import LeaveButton from "./Buttons/LeaveButton"
-import useWebRTC, { LOCAL_VIDEO } from "../../hooks/useWebRTC"
+import ActionButtons from "./ActionsButtons"
 import { callManager } from "./CallManager"
+import Chat from "./Chat"
+import { Call, CallSpace, Video, Videos } from "./styles"
 
 // TODO: ПЕРЕПИСАТЬ НАХУЙ
 function layout(clientsNumber = 1) {
@@ -43,19 +40,12 @@ function layout(clientsNumber = 1) {
 }
 
 const CallComponent = observer(() => {
-	// const { clients, provideMediaRef, error } = useWebRTC(sessionStore.selectedRoom)
 	const { clients } = callManager
 	const [isEnableChat, setEnableChat] = useState(false)
-	const [isMute, setMute] = useState(false) // DEBUG
 
 	const leave = () => {
 		sessionStore.selectRoom(null)
 	}
-
-	// DEBUG: LOG ONLY. Лучше через reaction
-	// useEffect(() => {
-	// 	console.log("[CallComponent] update clients", clients, clients.length)
-	// }, [clients])
 
 	return (
 		<Call $isVisibleChat={isEnableChat}>
@@ -79,18 +69,7 @@ const CallComponent = observer(() => {
 						<>debug: нет клиентов</>
 					)}
 				</Videos>
-
-				<ActionButtons>
-					<MicButton
-						isActive={isMute}
-						switchMode={() => {
-							setMute(prev => !prev)
-						}}
-					/>
-					<CamButton isActive={false} switchMode={() => {}} />
-					<ScreenShareButton isActive={false} switchMode={() => {}} />
-					<LeaveButton leave={leave} />
-				</ActionButtons>
+				<ActionButtons leave={leave}/>
 			</CallSpace>
 			{isEnableChat && <Chat />}
 		</Call>

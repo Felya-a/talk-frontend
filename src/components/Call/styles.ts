@@ -33,7 +33,7 @@ export const Video = styled.div`
 	}
 `
 
-export const ActionButtons = styled.div`
+export const ActionButtonsStyles = styled.div`
 	
 	height: calc(100% - 20px);
 	width: calc(4 * 100px);

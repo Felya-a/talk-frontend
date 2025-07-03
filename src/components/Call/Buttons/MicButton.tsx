@@ -6,9 +6,9 @@ import { ActionButtonProps } from "./interface"
 function MicButton(props: ActionButtonProps) {
 	return (
         <ActionButton onClick={props.switchMode}>
-            {props.isActive
-                ? <MicOffIcon/>
-                : <MicIcon/>
+            {typeof props.isActive == "function" && props.isActive() || props.isActive
+                ? <MicIcon/>
+                : <MicOffIcon/>
             }
         </ActionButton>
     )

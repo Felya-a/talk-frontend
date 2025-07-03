@@ -6,9 +6,9 @@ import { ActionButtonProps } from "./interface"
 function CamButton(props: ActionButtonProps) {
     return (
         <ActionButton onClick={props.switchMode}>
-            {props.isActive
-                ? <VideocamOffIcon/>
-                : <VideocamIcon/>
+            {typeof props.isActive == "function" && props.isActive() || props.isActive
+                ? <VideocamIcon/>
+                : <VideocamOffIcon/>
             }
         </ActionButton>
     )
