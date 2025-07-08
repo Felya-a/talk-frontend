@@ -1,43 +1,10 @@
 import { observer } from "mobx-react-lite"
-import { useState } from "react"
-import { LOCAL_VIDEO } from "../../hooks/useWebRTC"
+import { useEffect, useState } from "react"
 import { sessionStore } from "../../store"
 import ActionButtons from "./ActionsButtons"
 import { callManager } from "./CallManager"
 import Chat from "./Chat"
-import { Call, CallSpace, Video, Videos } from "./styles"
-
-// TODO: ПЕРЕПИСАТЬ НАХУЙ
-function layout(clientsNumber = 1) {
-	const pairs = Array.from({ length: clientsNumber }).reduce<any>((acc, next, index, arr) => {
-		if (index % 2 === 0) {
-			acc.push(arr.slice(index, index + 2))
-		}
-
-		return acc
-	}, []) as any[]
-
-	const rowsNumber = pairs.length
-	const height = `${100 / rowsNumber}%`
-
-	return pairs
-		.map((row, index, arr) => {
-			if (index === arr.length - 1 && row.length === 1) {
-				return [
-					{
-						width: "100%",
-						height
-					}
-				]
-			}
-
-			return row.map(() => ({
-				width: "50%",
-				height
-			}))
-		})
-		.flat()
-}
+import { Call, CallSpace, Video, Videos, Placeholder } from "./styles"
 
 const CallComponent = observer(() => {
 	const { clients } = callManager
@@ -47,29 +14,38 @@ const CallComponent = observer(() => {
 		sessionStore.selectRoom(null)
 	}
 
+	useEffect(() => {
+		console.log("UPDATE CLIENTS LIST", clients)
+	}, [clients])
+
+	useEffect(() => {
+		console.log("--- RERENDER --- CallComponent")
+	}, [])
+
 	return (
 		<Call $isVisibleChat={isEnableChat}>
 			<CallSpace>
 				<Videos>
-					{clients?.length ? (
-						clients.map((clientID, index) => (
-							<Video key={clientID} id={clientID}>
-								<video
-									ref={instance => {
-										console.log("[CallComponent] video ref", clientID)
-										callManager.setMediaElement(clientID, instance)
-									}}
-									autoPlay
-									playsInline
-									muted={clientID === LOCAL_VIDEO}
-								/>
-							</Video>
-						))
-					) : (
-						<>debug: нет клиентов</>
-					)}
+					{clients.map((client, index) => (
+						<Video key={index}>
+							<video
+								ref={instance => {
+									// console.log("[CallComponent] video ref", client.uuid)
+									callManager.setMediaElement(client.uuid, instance)
+								}}
+								autoPlay
+								playsInline
+							/>
+							{/* <Placeholder $isShow={!client.isWebcamActive} color={`rgb(${getRandomColor()},${getRandomColor()},${getRandomColor()})`}>{client.uuid}</Placeholder> */}
+							{!client.isWebcamActive && (
+								<Placeholder $isShow={true} color={`rgb(${getRandomColor()},${getRandomColor()},${getRandomColor()})`}>
+									{client.uuid}
+								</Placeholder>
+							)}
+						</Video>
+					))}
 				</Videos>
-				<ActionButtons leave={leave}/>
+				<ActionButtons leave={leave} />
 			</CallSpace>
 			{isEnableChat && <Chat />}
 		</Call>
@@ -77,3 +53,7 @@ const CallComponent = observer(() => {
 })
 
 export default CallComponent
+
+function getRandomColor() {
+	return Math.floor(Math.random() * (255 - 120 + 1)) + 120
+}

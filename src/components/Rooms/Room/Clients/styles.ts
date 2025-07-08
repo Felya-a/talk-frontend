@@ -26,5 +26,6 @@ export const Avatar = styled.div`
     background-color: green;
 `
 
-export const ClientName = styled.div`
+export const ClientName = styled.div<{$itsMe}>`
+    font-weight: ${props => props.$itsMe ? "700" : "400"};
 `

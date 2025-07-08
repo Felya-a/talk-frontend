@@ -20,7 +20,7 @@ class SocketService {
 	constructor(url: string) {
 		makeAutoObservable(this)
 
-		this.socket = new WebSocket(url)
+		this.connect(url)
 
 		const pingHandler = new PingHandler()
 		const shareRoomsHandler = new ShareRoomsHandler()
@@ -31,6 +31,11 @@ class SocketService {
 			[InputMessagesTypes.SHARE_ROOMS]: shareRoomsHandler,
 			[InputMessagesTypes.CLIENT_INFO]: clientInfoHandler
 		}
+	}
+
+	connect(url: string) {
+		this.socketStatus = SocketStatuses.CONNECTING
+		this.socket = new WebSocket(url)
 
 		this.socket.onopen = this.onOpen.bind(this)
 		this.socket.onclose = this.onClose.bind(this)
@@ -52,13 +57,13 @@ class SocketService {
 	}
 
 	private async onMessage(message: MessageEvent): Promise<void> {
-		console.log("Получено сообщение: ", JSON.parse(message.data))
+		// console.log("Получено сообщение: ", JSON.parse(message.data)) // TODO: вернуть лог
 		const parsedMessage = JSON.parse(message.data) as ReceiveMessage
 
 		// Динамические обработчики (подключенные после инициализации SocketService)
 		const dynamicHandler = this.dynamicsHandlers[parsedMessage.type]
 		if (dynamicHandler) {
-			console.log("Найден динамический обработчик ", parsedMessage.type)
+			// console.log("Найден динамический обработчик ", parsedMessage.type) // TODO: вернуть лог
 			await dynamicHandler(parsedMessage.data)
 			return
 		}
@@ -74,7 +79,7 @@ class SocketService {
 	}
 
 	public send<T extends OutputMessagesTypes>(type: T, data: TransmitData<T>): void {
-		console.log("Отправка сообщения ", type, data)
+		// console.log("Отправка сообщения ", type, data) // TODO: вернуть лог
 		const message: TransmitMessage<T> = { type, data }
 		this.socket.send(JSON.stringify(message))
 	}

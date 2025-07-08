@@ -20,7 +20,8 @@ const RoomComponent = observer(({ room, isCurrentRoom }: RoomProps) => {
 				<SoundSVG />
 				{room.name}
 			</RoomName>
-			<Clients clients={room.clients.map(clientUuid => ({uuid: clientUuid, nickname: "fake"}))} />
+			{/* <Clients clients={room.clients.map(clientUuid => ({uuid: clientUuid, nickname: "fake"}))} /> */}
+			<Clients clients={room.clients.map(clientUuid => ({uuid: clientUuid, nickname: clientUuid}))} />
 			{/* <Clients
 				clients={[
 					{ uuid: "1", nickname: "Илья Федосеев" },
