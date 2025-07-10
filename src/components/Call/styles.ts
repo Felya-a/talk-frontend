@@ -18,7 +18,8 @@ export const CallSpace = styled.div`
 export const Videos = styled.div`
 	display: grid;
 	margin: 10px;
-	grid-template-columns: repeat(auto-fit, minmax(150px, 250px));
+	/* grid-template-columns: repeat(auto-fit, minmax(150px, 250px)); */
+	grid-template-columns: repeat(auto-fit, 35dvh);
 	justify-content: center;
 	align-content: center;
 	gap: 10px;
@@ -31,6 +32,8 @@ export const Video = styled.div`
 	position: relative;
 	background-color: transparent;
 	user-select: none;
+	height: 35dvh;
+	/* width: 35dvh; */
 
 	video {
 		align-self: center;
@@ -54,6 +57,7 @@ export const Placeholder = styled.div<{ color: string; $isShow: boolean }>`
 	font-weight: 700;
 	display: grid;
 	place-items: center;
+	text-align: center;
 `
 
 export const ActionButtonsStyles = styled.div`
