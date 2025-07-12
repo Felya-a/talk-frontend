@@ -402,6 +402,7 @@ class CallManager {
 		if (clientName === SELF_CLIENT) {
 			console.log("[setMediaElement] SELF_CLIENT")
 			mediaElement.srcObject = this.localMedia[type]
+			mediaElement.volume = 0
 		}
 
 		if (!this.peerMediaElements[clientName]) {
