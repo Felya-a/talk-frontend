@@ -19,7 +19,7 @@ const CallComponent = observer(() => {
 		<Call $isVisibleChat={isEnableChat}>
 			<CallSpace>
 				<Videos>
-					{clients.map((client) => (
+					{clients.map(client => (
 						<Video key={client.uuid + MediaType.WEBCAM}>
 							<video
 								ref={instance => {
@@ -39,7 +39,7 @@ const CallComponent = observer(() => {
 					))}
 					{clients
 						.filter(client => client.statuses.display)
-						.map((client) => (
+						.map(client => (
 							<Video key={client.uuid + MediaType.DISPlAY}>
 								<video
 									ref={instance => {
@@ -52,9 +52,9 @@ const CallComponent = observer(() => {
 							</Video>
 						))}
 				</Videos>
-				<ActionButtons leave={leave} />
+				<ActionButtons leave={leave} isActiveChat={isEnableChat} enableChat={() => setEnableChat(prev => !prev)} />
 			</CallSpace>
-			{isEnableChat && <Chat />}
+			{isEnableChat && <Chat onClickSendChatMessage={callManager.sendChatMessage.bind(callManager)} />}
 		</Call>
 	)
 })
@@ -67,8 +67,8 @@ function getRandomColor() {
 
 function getColorFromUUID(uuid: string) {
 	const hash = Array.from(uuid).reduce((acc, char) => acc + char.charCodeAt(0), 0)
-	const r = 120 + (hash * 37) % 135
-	const g = 120 + (hash * 59) % 135
-	const b = 120 + (hash * 83) % 135
+	const r = 120 + ((hash * 37) % 135)
+	const g = 120 + ((hash * 59) % 135)
+	const b = 120 + ((hash * 83) % 135)
 	return `rgb(${r},${g},${b})`
 }

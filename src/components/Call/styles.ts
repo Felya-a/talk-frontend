@@ -2,15 +2,15 @@ import styled from "styled-components"
 
 export const Call = styled.div<{ $isVisibleChat }>`
 	display: grid;
-	${({ $isVisibleChat }) => $isVisibleChat && "grid-template-columns: 3fr 1fr;"}
+	${({ $isVisibleChat }) => $isVisibleChat && "grid-template-columns: 7fr 2fr;"}
 
 	background-color: rgb(43,49,53);
-	border-radius: 5px;
+	border-radius: 10px;
 `
 
 export const CallSpace = styled.div`
 	background-color: black;
-	border-radius: 5px;
+	border-radius: 10px;
 	display: grid;
 	grid-template-rows: auto 90px;
 `
@@ -62,7 +62,7 @@ export const Placeholder = styled.div<{ color: string; $isShow: boolean }>`
 
 export const ActionButtonsStyles = styled.div`
 	height: calc(100% - 20px);
-	width: calc(4 * 100px);
+	width: calc(5 * 100px);
 	border-radius: 10px;
 	margin-bottom: 20px;
 	background-color: #8080805e;

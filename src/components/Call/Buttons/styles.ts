@@ -41,15 +41,12 @@ export const MicrophoneStatusStyle = styled.div<{ $isEnabled: boolean }>`
 
 	&::before {
 		content: "";
-		/* display: ${props => (props.$isEnabled ? "none" : "block")}; */
 		position: absolute;
 		right: -4px;
 		bottom: 0px;
 		height: 30px;
 		width: 30px;
-		/* background-color: rgba(10, 10, 10, 0.3); */
 		background-color: ${props => (props.$isEnabled ? "transparent" : "rgba(10, 10, 10, 0.3)")};
-		/* background-color: red; */
 		border-radius: 50%;
 		z-index: 4;
 	}

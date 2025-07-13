@@ -10,7 +10,7 @@ export const Rooms = styled.div`
     grid-template-rows: auto 1fr auto;
 
     background-color: rgb(43,49,53);
-    border-radius: 5px;
+    border-radius: 10px;
 `
 
 export const RoomsList = styled.div`

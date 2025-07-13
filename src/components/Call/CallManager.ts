@@ -3,7 +3,8 @@ import { action, computed, makeAutoObservable } from "mobx"
 import { InputMessagesTypes, OutputMessagesTypes } from "../../socket/interface"
 import SocketService from "../../socket/SocketService"
 import { Room, sessionStore } from "../../store"
-import { DataChannelManager, DataChannelMessage, DataChannelMessageType } from "./DataChannelManager"
+import { ChatMessageType, DataChannelManager, DataChannelMessage, DataChannelMessageType } from "./DataChannelManager"
+import ChatManager from "./ChatManager"
 
 type Client = {
 	uuid: string
@@ -24,6 +25,7 @@ let SELF_CLIENT
 class CallManager {
 	private socketService: SocketService
 	private dataChannelManager = new DataChannelManager(this.onDataChannelMessage.bind(this))
+	chatManager = new ChatManager()
 
 	private peerConnections: Record<string, RTCPeerConnection> = {}
 	private streamsQueue: Record<string, MediaStream> = {}
@@ -90,6 +92,7 @@ class CallManager {
 		Object.values(this.peerConnections).forEach(peerConnection => peerConnection.close())
 		this.peerConnections = {}
 		this.displaySenders = {}
+		this.chatManager.clear()
 	}
 
 	get isOnWebcamAudio(): boolean {
@@ -208,6 +211,9 @@ class CallManager {
 			case DataChannelMessageType.Microphone:
 				this.clients.find(client => client.uuid === peerID).statuses.microphone = message.data.enabled
 				break
+			case DataChannelMessageType.ChatMessage:
+				this.chatManager.receive({clientId: peerID, text: message.data.text, image: message.data.image})
+				break
 			default:
 				console.log("[onDataChannelMessage] Неизвестный тип сообщения")
 				break
@@ -287,7 +293,7 @@ class CallManager {
 
 		// Отправка подключающемуся пользователю своего видео-потока
 		this.localMedia[MediaType.WEBCAM].getTracks().forEach(track => {
-			console.log("[WEBCAM] send local tracks to remote client", {trackId: track.id, kind: track.kind, label: track.label})
+			console.log("[WEBCAM] send local tracks to remote client", { trackId: track.id, kind: track.kind, label: track.label })
 			this.peerConnections[peerID].addTrack(track, this.localMedia[MediaType.WEBCAM])
 		})
 
@@ -296,13 +302,9 @@ class CallManager {
 		// затем отправлять ему треки this.localMedia[MediaType.DISPLAY]
 		let isAlreadySendDisplayTracks = false
 		this.peerConnections[peerID].onconnectionstatechange = (event: any) => {
-			if (
-				!isAlreadySendDisplayTracks &&
-				event?.target?.connectionState === "connected" &&
-				this.localMedia[MediaType.DISPlAY]
-			) {
+			if (!isAlreadySendDisplayTracks && event?.target?.connectionState === "connected" && this.localMedia[MediaType.DISPlAY]) {
 				this.localMedia[MediaType.DISPlAY].getTracks().forEach(async track => {
-					console.log("[DISPLAY] send local tracks to remote client", {trackId: track.id, kind: track.kind, label: track.label})
+					console.log("[DISPLAY] send local tracks to remote client", { trackId: track.id, kind: track.kind, label: track.label })
 					const sender = this.peerConnections[peerID].addTrack(track, this.localMedia[MediaType.DISPlAY])
 					this.displaySenders[peerID] = sender
 					const offer = await this.peerConnections[peerID].createOffer()
@@ -415,6 +417,11 @@ class CallManager {
 			this.peerMediaElements[clientName][type].srcObject = this.streamsQueue[clientName]
 			delete this.streamsQueue[clientName]
 		}
+	}
+
+	sendChatMessage(text: string, image: ArrayBuffer) {
+		this.chatManager.receive({clientId: SELF_CLIENT, text, image}) // Сохраняем своё сообщение
+		this.dataChannelManager.sendEveryone({ type: DataChannelMessageType.ChatMessage, data: { text, image } })
 	}
 
 	private findClientByUUID(uuid: string) {
