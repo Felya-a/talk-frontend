@@ -1,6 +1,6 @@
 import SendRoundedIcon from "@mui/icons-material/SendRounded"
 import { observer } from "mobx-react-lite"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { callManager } from "../CallManager"
 import {
 	ChatStyle,
@@ -30,31 +30,13 @@ const Chat = observer((props: ChatProps) => {
 	const {
 		chatManager: { messages }
 	} = callManager
+	const messagesBlockRef = useRef(null)
 
 	function onClickSend() {
 		const textForSend = messageText
 		setMessageText("")
 		props.onClickSendChatMessage(textForSend, null)
 	}
-
-	// function onFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
-	// 	const file = event.target?.files?.[0]
-	// 	if (!file) {
-	// 		console.debug("файла нет")
-	// 		return
-	// 	}
-
-	// 	event.target.value = "" // Очистка input
-
-	// 	const reader = new FileReader()
-	// 	reader.onload = () => {
-	// 		const arrayBuffer = reader.result as ArrayBuffer
-	// 		console.log(arrayBuffer)
-	// 		// console.log(new Uint8Array(arrayBuffer))
-	// 		props.onClickSendChatMessage("", arrayBuffer)
-	// 	}
-	// 	reader.readAsArrayBuffer(file)
-	// }
 
 	function onDrop(event) {
 		event.preventDefault()
@@ -90,6 +72,14 @@ const Chat = observer((props: ChatProps) => {
 		event.stopPropagation()
 	}
 
+	useEffect(() => {
+		// Прокрутка скролла вниз при появлении нового сообщения
+		const el = messagesBlockRef.current
+		if (el) {
+			el.scrollTop = el.scrollHeight
+		}
+	}, [messages.length])
+
 	return (
 		<ChatStyle
 			onDragEnter={() => setDragMode(true)}
@@ -104,34 +94,30 @@ const Chat = observer((props: ChatProps) => {
 			) : (
 				<>
 					<Messages>
-						{messages.map((message, index) => (
-							<ThemeProvider key={index} theme={{ $isSelf: message.clientId === sessionStore.myUuid }}>
-								<MessageStyle>
-									{/* Если предыдущее сообщение от этого-то же пользователя, то ник не пишем */}
-									{messages[index - 1]?.clientId !== message.clientId && (
-										<MessageClientName>{message.clientId.slice(0, 10)}</MessageClientName>
-									)}
-									<MessageContentStyle $hasImage={!!message.image}>
-										{message.image && (
-											<MessageImage>
-												<ModalImage
-													small={arrayBufferToImageSrc(message.image)}
-													large={arrayBufferToImageSrc(message.image)}
-													alt=""
-												/>
-												{/* <ModalImage
-											small={"https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"}
-											large={"https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"}
-											alt=""
-										/> */}
-												{/* <img src={arrayBufferToImageSrc(message.image)} alt="" /> */}
-											</MessageImage>
+						<div ref={messagesBlockRef}>
+							{messages.map((message, index) => (
+								<ThemeProvider key={index} theme={{ $isSelf: message.clientId === sessionStore.myUuid }}>
+									<MessageStyle>
+										{/* Если предыдущее сообщение от этого-то же пользователя, то ник не пишем */}
+										{messages[index - 1]?.clientId !== message.clientId && (
+											<MessageClientName>{message.clientId.slice(0, 10)}</MessageClientName>
 										)}
-										{message.text && <MessageText>{message.text}</MessageText>}
-									</MessageContentStyle>
-								</MessageStyle>
-							</ThemeProvider>
-						))}
+										<MessageContentStyle $hasImage={!!message.image}>
+											{message.image && (
+												<MessageImage>
+													<ModalImage
+														small={arrayBufferToImageSrc(message.image)}
+														large={arrayBufferToImageSrc(message.image)}
+														alt=""
+													/>
+												</MessageImage>
+											)}
+											{message.text && <MessageText>{message.text}</MessageText>}
+										</MessageContentStyle>
+									</MessageStyle>
+								</ThemeProvider>
+							))}
+						</div>
 					</Messages>
 					<InputBlock>
 						<InputStyle>

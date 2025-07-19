@@ -3,7 +3,6 @@ import styled from "styled-components"
 export const ChatStyle = styled.div<{ $isDrag }>`
 	display: grid;
 	height: 100%;
-	/* max-height: 100%; */
 	overflow-x: hidden;
 	overflow-y: auto;
 	grid-template-rows: ${props => (props.$isDrag ? "auto 1fr" : "auto 1fr auto")};
@@ -17,10 +16,38 @@ export const ChatTitle = styled.div`
 `
 
 export const Messages = styled.div`
-	display: grid;
-	grid-auto-flow: row;
-	align-content: start;
-	gap: 10px;
+	position: relative;
+	height: 100%;
+
+	& > div {
+		position: absolute;
+		overflow: auto;
+		height: 100%;
+		width: 100%;
+		display: grid;
+		grid-auto-flow: row;
+		align-content: start;
+		gap: 10px;
+		padding: 0 5px 5px 0;
+
+		// Стилизация скролла для Firefox
+		scrollbar-width: thin; /* auto | thin | none */
+		scrollbar-color: rgba(200, 200, 200, 0.4) transparent;
+
+		&::-webkit-scrollbar {
+			width: 8px;
+			height: 8px;
+		}
+
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background-color: rgba(200, 200, 200, 0.4);
+			border-radius: 4px;
+		}
+	}
 `
 export const MessageStyle = styled.div`
 	display: grid;
