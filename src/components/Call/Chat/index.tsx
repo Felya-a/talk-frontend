@@ -17,6 +17,8 @@ import {
 	SendButton
 } from "./styles"
 import ModalImage from "react-modal-image"
+import { sessionStore } from "../../../store"
+import { ThemeProvider } from "styled-components"
 
 interface ChatProps {
 	onClickSendChatMessage: (text: string, image: ArrayBuffer) => void
@@ -102,31 +104,33 @@ const Chat = observer((props: ChatProps) => {
 			) : (
 				<>
 					<Messages>
-						{messages.map((message, index, array) => (
-							<MessageStyle key={index}>
-								{/* Если предыдущее сообщение от этого-то же пользователя, то ник не пишем */}
-								{messages[index - 1]?.clientId !== message.clientId && (
-									<MessageClientName>{message.clientId.slice(0, 10)}</MessageClientName>
-								)}
-								<MessageContentStyle $hasImage={!!message.image}>
-									{message.image && (
-										<MessageImage>
-											<ModalImage
-												small={arrayBufferToImageSrc(message.image)}
-												large={arrayBufferToImageSrc(message.image)}
-												alt=""
-											/>
-											{/* <ModalImage
+						{messages.map((message, index) => (
+							<ThemeProvider key={index} theme={{ $isSelf: message.clientId === sessionStore.myUuid }}>
+								<MessageStyle>
+									{/* Если предыдущее сообщение от этого-то же пользователя, то ник не пишем */}
+									{messages[index - 1]?.clientId !== message.clientId && (
+										<MessageClientName>{message.clientId.slice(0, 10)}</MessageClientName>
+									)}
+									<MessageContentStyle $hasImage={!!message.image}>
+										{message.image && (
+											<MessageImage>
+												<ModalImage
+													small={arrayBufferToImageSrc(message.image)}
+													large={arrayBufferToImageSrc(message.image)}
+													alt=""
+												/>
+												{/* <ModalImage
 											small={"https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"}
 											large={"https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"}
 											alt=""
 										/> */}
-											{/* <img src={arrayBufferToImageSrc(message.image)} alt="" /> */}
-										</MessageImage>
-									)}
-									{message.text && <MessageText>{message.text}</MessageText>}
-								</MessageContentStyle>
-							</MessageStyle>
+												{/* <img src={arrayBufferToImageSrc(message.image)} alt="" /> */}
+											</MessageImage>
+										)}
+										{message.text && <MessageText>{message.text}</MessageText>}
+									</MessageContentStyle>
+								</MessageStyle>
+							</ThemeProvider>
 						))}
 					</Messages>
 					<InputBlock>

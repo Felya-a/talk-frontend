@@ -22,7 +22,10 @@ export const Messages = styled.div`
 	align-content: start;
 	gap: 10px;
 `
-export const MessageStyle = styled.div``
+export const MessageStyle = styled.div`
+	display: grid;
+	${props => props.theme.$isSelf && "justify-items: end;"}
+`
 
 export const MessageClientName = styled.div`
 	font-weight: 500;
@@ -32,7 +35,7 @@ export const MessageClientName = styled.div`
 export const MessageContentStyle = styled.div<{ $hasImage }>`
 	padding: 10px;
 	background-color: grey;
-	border-radius: 0px 10px 10px 10px;
+	border-radius: ${props => (props.theme.$isSelf ? "10px 0px 10px 10px" : "0px 10px 10px 10px")};
 	${props => !props.$hasImage && "height: min-content;width: min-content;"}
 `
 export const MessageImage = styled.div``
