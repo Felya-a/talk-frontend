@@ -112,7 +112,7 @@ class CallManager {
 		if (audioTrack) {
 			audioTrack.enabled = !audioTrack.enabled
 			this.findSelfClient().statuses.microphone = audioTrack.enabled
-			this.dataChannelManager.sendEveryone({ type: DataChannelMessageType.Microphone, data: { enabled: audioTrack.enabled } })
+			this.sendAudioVideoStatus()
 		}
 	}
 
@@ -121,6 +121,17 @@ class CallManager {
 		if (videoTrack) {
 			videoTrack.enabled = !videoTrack.enabled
 			this.findSelfClient().statuses.webcam = videoTrack.enabled
+			this.sendAudioVideoStatus()
+		}
+	}
+
+	sendAudioVideoStatus() {
+		const audioTrack = this.localMedia[MediaType.WEBCAM]?.getAudioTracks()?.[0]
+		const videoTrack = this.localMedia[MediaType.WEBCAM]?.getVideoTracks()?.[0]
+		if (audioTrack) {
+			this.dataChannelManager.sendEveryone({ type: DataChannelMessageType.Microphone, data: { enabled: audioTrack.enabled } })
+		}
+		if (videoTrack) {
 			this.dataChannelManager.sendEveryone({ type: DataChannelMessageType.Webcam, data: { enabled: videoTrack.enabled } })
 		}
 	}
@@ -289,7 +300,8 @@ class CallManager {
 			})
 		}
 
-		this.dataChannelManager.listenCreate(this.peerConnections[peerID], peerID)
+		// При создании dataChannel отправляем свои статусы по микрофону и вебке
+		this.dataChannelManager.listenCreate(this.peerConnections[peerID], peerID, () => this.sendAudioVideoStatus())
 
 		// Отправка подключающемуся пользователю своего видео-потока
 		this.localMedia[MediaType.WEBCAM].getTracks().forEach(track => {
@@ -302,7 +314,8 @@ class CallManager {
 		// затем отправлять ему треки this.localMedia[MediaType.DISPLAY]
 		let isAlreadySendDisplayTracks = false
 		this.peerConnections[peerID].onconnectionstatechange = (event: any) => {
-			if (!isAlreadySendDisplayTracks && event?.target?.connectionState === "connected" && this.localMedia[MediaType.DISPlAY]) {
+			if (!isAlreadySendDisplayTracks) return
+			if (event?.target?.connectionState === "connected" && this.localMedia[MediaType.DISPlAY]) {
 				this.localMedia[MediaType.DISPlAY].getTracks().forEach(async track => {
 					console.log("[DISPLAY] send local tracks to remote client", { trackId: track.id, kind: track.kind, label: track.label })
 					const sender = this.peerConnections[peerID].addTrack(track, this.localMedia[MediaType.DISPlAY])

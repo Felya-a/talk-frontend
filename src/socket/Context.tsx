@@ -1,6 +1,7 @@
 import { reaction } from "mobx"
 import React, { createContext, useContext, useEffect, useRef, useState } from "react"
 import SocketService, { SocketStatuses } from "./SocketService"
+import { callManager } from "../components/Call/CallManager"
 
 const WebSocketContext = createContext<SocketService | null>(null)
 
@@ -24,6 +25,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
 
 				// Попытка переподключения к серверу
 				if (newStatus === SocketStatuses.CLOSED) {
+					callManager.stop()
 					setTimeout(() => {
 						webSocketServiceRef.current.connect(url)
 					}, 3000)

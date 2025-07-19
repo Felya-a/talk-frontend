@@ -112,9 +112,12 @@ export class DataChannelManager {
 		channel.onerror = console.error
 	}
 
-	listenCreate(peerConnection: RTCPeerConnection, peerID: string) {
+	listenCreate(peerConnection: RTCPeerConnection, peerID: string, callback: () => void) {
 		// Вызывает и пользователь находящийся в комнате и подключающийся пользователь
-		peerConnection.ondatachannel = event => this.add(peerID, event.channel)
+		peerConnection.ondatachannel = event => {
+			this.add(peerID, event.channel)
+			callback()
+		}
 	}
 
 	close(peerID: string) {
